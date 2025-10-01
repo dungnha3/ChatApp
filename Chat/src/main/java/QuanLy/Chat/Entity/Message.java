@@ -23,6 +23,19 @@ public class Message {
 
     private LocalDateTime sentAt;
 
+    @Column(nullable = false)
+    private Boolean deleted = false;
+
+    private LocalDateTime editedAt;
+
+    @Column(length = 20)
+    private String status; // SENT, DELIVERED, SEEN
+
+    // Media support (optional)
+    private String mediaUrl;        // where the file is served
+    private String mediaContentType; // image/png, video/mp4, ...
+    private String mediaFileName;
+
     @PrePersist
     protected void onCreate() {
         this.sentAt = LocalDateTime.now();
@@ -50,6 +63,24 @@ public class Message {
 
     public LocalDateTime getSentAt() { return sentAt; }
     public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
+
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
+
+    public LocalDateTime getEditedAt() { return editedAt; }
+    public void setEditedAt(LocalDateTime editedAt) { this.editedAt = editedAt; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getMediaUrl() { return mediaUrl; }
+    public void setMediaUrl(String mediaUrl) { this.mediaUrl = mediaUrl; }
+
+    public String getMediaContentType() { return mediaContentType; }
+    public void setMediaContentType(String mediaContentType) { this.mediaContentType = mediaContentType; }
+
+    public String getMediaFileName() { return mediaFileName; }
+    public void setMediaFileName(String mediaFileName) { this.mediaFileName = mediaFileName; }
 
     public enum MessageStatus {
     SENT,       // đã gửi

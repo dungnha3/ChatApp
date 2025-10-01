@@ -26,6 +26,9 @@ public class User {
 
     private String avatarUrl;
 
+    @Column(nullable = false, length = 30)
+    private String role = "USER"; // USER, ADMIN
+
     private LocalDateTime createdAt;
 
     // Quan hệ với Message
@@ -69,6 +72,9 @@ public class User {
 
     public String getAvatarUrl() { return avatarUrl; }
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

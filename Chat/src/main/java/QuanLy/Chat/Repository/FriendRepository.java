@@ -1,20 +1,20 @@
 package QuanLy.Chat.Repository;
 
 import java.util.List;
-
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import QuanLy.Chat.Entity.Friend;
 import QuanLy.Chat.Entity.FriendID;
+import QuanLy.Chat.Entity.User;
 
 public interface FriendRepository extends JpaRepository<Friend, FriendID> {
+    List<Friend> findByUser_UserId(Long userId);
+    List<Friend> findByFriend_UserId(Long friendId);
 
-    // Lấy tất cả bạn bè mà user này đã kết nối
-    List<Friend> findByUserUserId(Long userId);
+    boolean existsByUser_UserIdAndFriend_UserId(Long userId, Long friendId);
 
-    // Lấy tất cả những user đã kết bạn với 1 người
-    List<Friend> findByFriendUserId(Long friendId);
+    Optional<Friend> findByUser_UserIdAndFriend_UserId(Long userId, Long friendId);
 
-    // Kiểm tra xem 2 user đã kết bạn chưa
-    boolean existsByUserUserIdAndFriendUserId(Long userId, Long friendId);
+    List<Friend> findByUser(User user);
+    Friend findByUserAndFriend(User user, User friend);
 }
