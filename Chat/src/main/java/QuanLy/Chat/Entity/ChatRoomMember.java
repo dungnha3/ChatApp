@@ -1,5 +1,6 @@
 package QuanLy.Chat.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,6 +10,7 @@ public class ChatRoomMember {
     @Id
     @ManyToOne
     @JoinColumn(name = "chatroom_id")
+    @JsonIgnore
     private ChatRoom chatRoom;
 
     @Id

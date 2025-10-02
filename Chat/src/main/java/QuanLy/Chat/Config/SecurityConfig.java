@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import QuanLy.Chat.Security.JwtAuthenticationFilter;
+import QuanLy.Chat.Security.JwtUtil;
 
 @Configuration
 public class SecurityConfig {
@@ -23,13 +24,13 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // Tắt CSRF (cho phép gọi API POST/PUT/DELETE từ Postman)
             .cors(cors -> {}) // Bật CORS theo cấu hình bên dưới
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/ws/**").permitAll()
+                .requestMatchers("/api/auth/**", "/ws/**", "/api/webrtc/ice-servers").permitAll()
                 .anyRequest().authenticated()
             );
 
         http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -55,9 +56,13 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtUtil());
+    }
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    @Bean
+    public JwtUtil jwtUtil() {
+        return new JwtUtil();
     }
 }

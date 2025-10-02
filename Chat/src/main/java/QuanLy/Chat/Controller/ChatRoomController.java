@@ -18,6 +18,7 @@ import QuanLy.Chat.Entity.ChatRoom;
 import QuanLy.Chat.Entity.ChatRoomMember;
 import QuanLy.Chat.Service.ChatRoomService;
 import QuanLy.Chat.DTO.ChatRoomDTO;
+import QuanLy.Chat.DTO.ChatRoomMemberDTO;
 
 @RestController
 @RequestMapping("/api/rooms")
@@ -33,7 +34,7 @@ public class ChatRoomController {
     public ResponseEntity<?> createRoom(@RequestParam String roomName, @RequestParam(defaultValue = "false") boolean isGroup) {
 		try {
 			ChatRoom room = chatRoomService.createRoom(roomName, isGroup);
-            ChatRoomDTO dto = new ChatRoomDTO(room.getChatRoomId(), room.getRoomName(), room.getIsGroup(), room.getCreatedAt(), room.getMembers() == null ? 0 : room.getMembers().size());
+            ChatRoomDTO dto = new ChatRoomDTO(room.getChatRoomId(), room.getRoomName(), room.getIsGroup(), room.getCreatedAt());
             return ResponseEntity.status(HttpStatus.CREATED).body(dto);
 		} catch (IllegalArgumentException ex) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
@@ -43,7 +44,7 @@ public class ChatRoomController {
 	@PutMapping("/{roomId}")
     public ResponseEntity<ChatRoomDTO> updateRoom(@PathVariable Long roomId, @RequestParam String roomName) {
         ChatRoom room = chatRoomService.updateRoom(roomId, roomName);
-        ChatRoomDTO dto = new ChatRoomDTO(room.getChatRoomId(), room.getRoomName(), room.getIsGroup(), room.getCreatedAt(), room.getMembers() == null ? 0 : room.getMembers().size());
+        ChatRoomDTO dto = new ChatRoomDTO(room.getChatRoomId(), room.getRoomName(), room.getIsGroup(), room.getCreatedAt());
         return ResponseEntity.ok(dto);
 	}
 
@@ -56,21 +57,28 @@ public class ChatRoomController {
 	@GetMapping("/{roomId}")
     public ResponseEntity<ChatRoomDTO> getRoom(@PathVariable Long roomId) {
         ChatRoom room = chatRoomService.getRoom(roomId);
-        ChatRoomDTO dto = new ChatRoomDTO(room.getChatRoomId(), room.getRoomName(), room.getIsGroup(), room.getCreatedAt(), room.getMembers() == null ? 0 : room.getMembers().size());
+        ChatRoomDTO dto = new ChatRoomDTO(room.getChatRoomId(), room.getRoomName(), room.getIsGroup(), room.getCreatedAt());
         return ResponseEntity.ok(dto);
 	}
 
 	@GetMapping
     public ResponseEntity<List<ChatRoomDTO>> getAll() {
         List<ChatRoomDTO> dtos = chatRoomService.getAllRooms().stream()
-            .map(r -> new ChatRoomDTO(r.getChatRoomId(), r.getRoomName(), r.getIsGroup(), r.getCreatedAt(), r.getMembers() == null ? 0 : r.getMembers().size()))
+            .map(r -> new ChatRoomDTO(r.getChatRoomId(), r.getRoomName(), r.getIsGroup(), r.getCreatedAt()))
             .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
 	}
 
 	@PostMapping("/{roomId}/members")
-	public ResponseEntity<ChatRoomMember> addMember(@PathVariable Long roomId, @RequestParam Long userId, @RequestParam(required = false) String role) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(chatRoomService.addMember(roomId, userId, role));
+	public ResponseEntity<ChatRoomMemberDTO> addMember(@PathVariable Long roomId, @RequestParam Long userId, @RequestParam(required = false) String role) {
+		ChatRoomMember member = chatRoomService.addMember(roomId, userId, role);
+		ChatRoomMemberDTO dto = new ChatRoomMemberDTO(
+			member.getUser().getUserId(),
+			member.getUser().getUsername(),
+			member.getUser().getEmail(),
+			member.getRole()
+		);
+		return ResponseEntity.status(HttpStatus.CREATED).body(dto);
 	}
 
 	@DeleteMapping("/{roomId}/members/{userId}")
@@ -80,8 +88,16 @@ public class ChatRoomController {
 	}
 
 	@GetMapping("/{roomId}/members")
-	public ResponseEntity<List<ChatRoomMember>> listMembers(@PathVariable Long roomId) {
-		return ResponseEntity.ok(chatRoomService.listMembers(roomId));
+	public ResponseEntity<List<ChatRoomMemberDTO>> listMembers(@PathVariable Long roomId) {
+		List<ChatRoomMemberDTO> memberDTOs = chatRoomService.listMembers(roomId).stream()
+			.map(member -> new ChatRoomMemberDTO(
+				member.getUser().getUserId(),
+				member.getUser().getUsername(),
+				member.getUser().getEmail(),
+				member.getRole()
+			))
+			.collect(Collectors.toList());
+		return ResponseEntity.ok(memberDTOs);
 	}
 }
 

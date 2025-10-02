@@ -17,17 +17,17 @@ import javax.crypto.SecretKey;
 @Component
 public class JwtUtil {
 
-	@Value("${app.jwt.secret:ZmFrZV9zZWNyZXRfZm9yX2RlbW8=}")
-	private String secretBase64;
+	@Value("${app.jwt.secret}")
+	private String secret;
 
-	@Value("${app.jwt.accessMillis:900000}")
-	private long accessMillis;
+	@Value("${app.jwt.accessTokenExpiration}")
+	private long accessTokenExpiration;
 
-	@Value("${app.jwt.refreshMillis:1209600000}")
-	private long refreshMillis;
+	@Value("${app.jwt.refreshTokenExpiration}")
+	private long refreshTokenExpiration;
 
 	private SecretKey getKey() {
-		return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretBase64));
+		return Keys.hmacShaKeyFor(secret.getBytes());
 	}
 
 	public String generateAccessToken(String subject, Map<String, Object> claims) {
@@ -35,7 +35,7 @@ public class JwtUtil {
 			.setSubject(subject)
 			.addClaims(claims)
 			.setIssuedAt(new Date())
-			.setExpiration(new Date(System.currentTimeMillis() + accessMillis))
+			.setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
 			.signWith(getKey(), SignatureAlgorithm.HS256)
 			.compact();
 	}
@@ -44,13 +44,26 @@ public class JwtUtil {
 		return Jwts.builder()
 			.setSubject(subject)
 			.setIssuedAt(new Date())
-			.setExpiration(new Date(System.currentTimeMillis() + refreshMillis))
+			.setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
 			.signWith(getKey(), SignatureAlgorithm.HS256)
 			.compact();
 	}
 
 	public Claims parse(String token) {
 		return Jwts.parserBuilder().setSigningKey(getKey()).build().parseClaimsJws(token).getBody();
+	}
+
+	public String extractUsername(String token) {
+		return parse(token).getSubject();
+	}
+
+	public boolean validateToken(String token, String username) {
+		try {
+			Claims claims = parse(token);
+			return username.equals(claims.getSubject()) && !claims.getExpiration().before(new Date());
+		} catch (Exception e) {
+			return false;
+		}
 	}
 }
 
